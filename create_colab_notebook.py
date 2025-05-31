@@ -36,13 +36,48 @@ cells.append(nbf.v4.new_code_cell("""# Clone the repository with API implementat
 %cd stable-virtual-camera
 !git checkout devin/1748692706-api-implementation"""))
 
-cells.append(nbf.v4.new_code_cell("""# Install dependencies with compatible versions
-!pip install transformers>=4.36.0
-!pip install diffusers>=0.24.0
-!pip install accelerate>=0.25.0
+cells.append(nbf.v4.new_code_cell("""# Comprehensive dependency fix for torch ecosystem compatibility
+
+print("🔧 Fixing torch ecosystem compatibility...")
+
+!pip uninstall -y torch torchvision torchaudio transformers diffusers accelerate xformers -q
+
+!pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
+
+!pip install transformers==4.37.2 diffusers==0.25.1 accelerate==0.26.1
+
+print("✅ Torch ecosystem reinstalled. Restarting runtime...")
+
+import os
+os.kill(os.getpid(), 9)"""))
+
+cells.append(nbf.v4.new_code_cell("""# Post-restart: Verify imports and complete setup
+print("🔍 Verifying torch ecosystem imports...")
+
+try:
+    import torch
+    import torchvision
+    print(f"✅ Torch {torch.__version__}, Torchvision {torchvision.__version__}")
+except ImportError as e:
+    print(f"❌ Torch import failed: {e}")
+
+try:
+    from transformers import AutoImageProcessor
+    print("✅ AutoImageProcessor import successful!")
+except ImportError as e:
+    print(f"❌ AutoImageProcessor import failed: {e}")
+    
+try:
+    from diffusers.models import AutoencoderKL
+    print("✅ AutoencoderKL import successful!")
+except ImportError as e:
+    print(f"❌ AutoencoderKL import failed: {e}")
+
+print("📦 Installing remaining dependencies...")
 !pip install -e .
-!pip install fastapi uvicorn python-multipart
-!pip install imageio[ffmpeg]"""))
+!pip install fastapi uvicorn python-multipart imageio[ffmpeg]
+
+print("✅ All dependencies installed successfully!")"""))
 
 cells.append(nbf.v4.new_markdown_cell("""## 2. Authentication and Model Download
 
