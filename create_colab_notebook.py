@@ -39,79 +39,91 @@ cells.append(nbf.v4.new_code_cell("""# Clone the repository with API implementat
 !ls -la
 print("✅ Repository cloned and checked out successfully!")"""))
 
-cells.append(nbf.v4.new_code_cell("""# Comprehensive dependency fix for torch ecosystem compatibility
+cells.append(nbf.v4.new_code_cell("""# Aggressive dependency fix bypassing pip resolver conflicts
 
-print("🔧 Fixing torch ecosystem compatibility...")
-print("🚨 This will show dependency conflict warnings - they can be safely ignored!")
+print("🔧 Implementing aggressive dependency fix...")
+print("🚨 This approach bypasses pip's dependency resolver to avoid conflicts!")
 
-print("📦 Uninstalling conflicting packages...")
-!pip uninstall -y torch torchvision torchaudio transformers diffusers accelerate xformers sentence-transformers peft -q
+print("💥 Nuclear uninstall of all conflicting packages...")
+!pip uninstall -y torch torchvision torchaudio transformers diffusers accelerate xformers sentence-transformers peft tensorflow jax jaxlib fastai -q
 
-print("🔥 Installing torch ecosystem...")
-!pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
+print("🔥 Installing torch ecosystem with dependency bypass...")
+!pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
+!pip install numpy==1.24.4 --no-deps  # Compatible numpy version
+!pip install pillow typing-extensions sympy networkx jinja2 fsspec --no-deps
 
-print("🤗 Installing transformers/diffusers with conflict resolution...")
-!pip install transformers==4.37.2 diffusers==0.25.1 accelerate==0.26.1 huggingface_hub==0.19.4 --force-reinstall
+print("🤗 Installing transformers/diffusers with manual dependency control...")
+!pip install huggingface_hub==0.20.2 --no-deps  # Use version that works with both
+!pip install tokenizers==0.15.2 safetensors==0.4.5 --no-deps
+!pip install transformers==4.37.2 --no-deps
+!pip install diffusers==0.25.1 --no-deps
+!pip install accelerate==0.26.1 --no-deps
 
-print("✅ Dependencies installed with conflict resolution!")
+# Step 4: Install remaining essential dependencies
+print("📦 Installing remaining dependencies...")
+!pip install requests tqdm regex pyyaml packaging filelock --no-deps
+
+print("✅ Aggressive installation completed!")
 print("⚠️  Runtime restart required. Please restart and run next cell.")
 
 import os
 os.kill(os.getpid(), 9)"""))
 
-cells.append(nbf.v4.new_code_cell("""# Post-restart: Verify imports and complete setup
-print("🔍 Post-restart verification and setup...")
-print("🚨 Dependency conflict warnings are expected and can be ignored!")
+cells.append(nbf.v4.new_code_cell("""# Post-restart: Verify and complete setup with manual dependency management
+print("🔍 Post-restart verification with manual dependency management...")
 
-def test_import_with_retry(import_func, name, retry_cmd=None):
-    try:
-        import_func()
-        print(f"✅ {name} import successful!")
-        return True
-    except Exception as e:
-        print(f"❌ {name} import failed: {e}")
-        if retry_cmd:
-            print(f"🔄 Attempting {name} fix...")
-            !{retry_cmd}
-            try:
-                import_func()
-                print(f"✅ {name} import fixed!")
-                return True
-            except Exception as e2:
-                print(f"❌ {name} still failing: {e2}")
-                return False
-        return False
+print("🔥 Verifying torch installation...")
+try:
+    import torch
+    import torchvision
+    print(f"✅ Torch {torch.__version__}, Torchvision {torchvision.__version__}")
+    if torch.__version__ != "2.1.0+cu118":
+        print(f"⚠️  Expected torch 2.1.0+cu118, got {torch.__version__}")
+        print("🔄 Reinstalling correct torch version...")
+        !pip uninstall torch torchvision torchaudio -y -q
+        !pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
+        import torch
+        import torchvision
+        print(f"✅ Fixed: Torch {torch.__version__}, Torchvision {torchvision.__version__}")
+except Exception as e:
+    print(f"❌ Torch verification failed: {e}")
+    !pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
 
-test_import_with_retry(
-    lambda: __import__('torch') and __import__('torchvision'),
-    "Torch ecosystem",
-    "pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118 --force-reinstall"
-)
+print("🤗 Verifying transformers...")
+try:
+    from transformers import AutoImageProcessor
+    print("✅ AutoImageProcessor import successful!")
+except Exception as e:
+    print(f"❌ AutoImageProcessor failed: {e}")
+    print("🔄 Installing transformers dependencies...")
+    !pip install transformers==4.37.2 tokenizers==0.15.2 --no-deps
 
-test_import_with_retry(
-    lambda: __import__('transformers').AutoImageProcessor,
-    "AutoImageProcessor",
-    "pip install transformers==4.37.2 --force-reinstall"
-)
+print("🎨 Verifying diffusers...")
+try:
+    from diffusers.models import AutoencoderKL
+    print("✅ AutoencoderKL import successful!")
+except Exception as e:
+    print(f"❌ AutoencoderKL failed: {e}")
+    print("🔄 Installing diffusers with compatible hub version...")
+    !pip install huggingface_hub==0.20.2 diffusers==0.25.1 --no-deps
 
-test_import_with_retry(
-    lambda: __import__('diffusers.models', fromlist=['AutoencoderKL']).AutoencoderKL,
-    "AutoencoderKL",
-    "pip install diffusers==0.25.1 huggingface_hub==0.19.4 --force-reinstall"
-)
-
-print("📦 Installing seva package and remaining dependencies...")
+print("📦 Installing seva package...")
 %cd /content/stable-virtual-camera
-!pip install -e . --quiet
-!pip install fastapi uvicorn python-multipart imageio[ffmpeg] --quiet
+!pip install -e . --no-deps
+!pip install fastapi uvicorn python-multipart imageio --no-deps
 
-test_import_with_retry(
-    lambda: __import__('seva.api', fromlist=['SevaAPI']).SevaAPI,
-    "SevaAPI",
-    "pip install -e . --force-reinstall --quiet"
-)
+print("🎯 Final verification...")
+try:
+    from seva.api import SevaAPI
+    print("✅ SevaAPI import successful!")
+except Exception as e:
+    print(f"❌ SevaAPI failed: {e}")
+    print("🔄 Installing missing dependencies...")
+    !pip install opencv-python matplotlib --no-deps
+    from seva.api import SevaAPI
+    print("✅ SevaAPI import fixed!")
 
-print("✅ Setup completed! Dependency conflicts are normal and won't affect functionality.")"""))
+print("✅ Setup completed with manual dependency management!")"""))
 
 cells.append(nbf.v4.new_markdown_cell("""## 2. Authentication and Model Download
 

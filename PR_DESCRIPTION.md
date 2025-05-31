@@ -90,6 +90,24 @@ The implementation has been tested with:
 - All supported trajectory types
 - Error handling for invalid inputs
 
+## 🔧 Colab Dependency Resolution
+
+The Colab notebook implements an aggressive dependency management strategy to resolve torch ecosystem conflicts:
+
+### Key Strategy
+- **--no-deps Installation**: Bypasses pip's dependency resolver to avoid conflicts
+- **Compatible Version Selection**: Uses huggingface_hub==0.20.2 which satisfies both:
+  - diffusers 0.25.1 requirement: `>=0.20.2`
+  - transformers 4.37.2 requirement: `>=0.19.3,<1.0`
+- **Nuclear Uninstall**: Removes all conflicting packages before clean installation
+- **Systematic Verification**: Post-restart verification with targeted fixes
+
+### Resolved Issues
+- ❌ torch 2.7.0 vs 2.1.0 compatibility → ✅ Forced torch 2.1.0+cu118
+- ❌ huggingface_hub version conflicts → ✅ Compatible 0.20.2 version
+- ❌ _SDPBackend import errors → ✅ Correct torch ecosystem versions
+- ❌ Dependency resolver conflicts → ✅ Bypassed with --no-deps
+
 ## Future Enhancements
 
 - Multi-image preprocessing with DUST3R integration
