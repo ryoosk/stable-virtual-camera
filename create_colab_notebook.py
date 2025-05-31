@@ -36,7 +36,10 @@ cells.append(nbf.v4.new_code_cell("""# Clone the repository with API implementat
 %cd stable-virtual-camera
 !git checkout devin/1748692706-api-implementation"""))
 
-cells.append(nbf.v4.new_code_cell("""# Install dependencies
+cells.append(nbf.v4.new_code_cell("""# Install dependencies with compatible versions
+!pip install transformers>=4.36.0
+!pip install diffusers>=0.24.0
+!pip install accelerate>=0.25.0
 !pip install -e .
 !pip install fastapi uvicorn python-multipart
 !pip install imageio[ffmpeg]"""))
