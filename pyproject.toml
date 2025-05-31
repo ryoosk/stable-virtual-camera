@@ -24,10 +24,14 @@ dependencies = [
     "imageio[ffmpeg]",
     "huggingface-hub",
     "opencv-python",
+    "fastapi",
+    "uvicorn[standard]", 
+    "python-multipart",
 ]
 
 [project.optional-dependencies]
 dev = ["ruff", "ipdb", "pytest", "line_profiler", "pre-commit"]
+api = ["fastapi", "uvicorn[standard]", "python-multipart"]
 
 [tool.setuptools.packages.find]
 include = ["seva"]
