@@ -48,8 +48,8 @@ print("💥 Nuclear uninstall of all conflicting packages...")
 !pip uninstall -y torch torchvision torchaudio transformers diffusers accelerate xformers sentence-transformers peft tensorflow jax jaxlib fastai -q
 
 print("🔥 Installing torch ecosystem with dependency bypass...")
-!pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
-!pip install numpy==1.24.4 --no-deps  # Compatible numpy version
+!pip install torch==2.6.0 torchvision==0.19.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
+!pip install numpy==1.26.4 --no-deps  # Compatible numpy version
 !pip install pillow typing-extensions sympy networkx jinja2 fsspec --no-deps
 
 print("🤗 Installing transformers/diffusers with manual dependency control...")
@@ -77,17 +77,17 @@ try:
     import torch
     import torchvision
     print(f"✅ Torch {torch.__version__}, Torchvision {torchvision.__version__}")
-    if torch.__version__ != "2.1.0+cu118":
-        print(f"⚠️  Expected torch 2.1.0+cu118, got {torch.__version__}")
+    if not torch.__version__.startswith("2.6.0"):
+        print(f"⚠️  Expected torch 2.6.0+cu118, got {torch.__version__}")
         print("🔄 Reinstalling correct torch version...")
         !pip uninstall torch torchvision torchaudio -y -q
-        !pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
+        !pip install torch==2.6.0 torchvision==0.19.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
         import torch
         import torchvision
         print(f"✅ Fixed: Torch {torch.__version__}, Torchvision {torchvision.__version__}")
 except Exception as e:
     print(f"❌ Torch verification failed: {e}")
-    !pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
+    !pip install torch==2.6.0 torchvision==0.19.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118 --no-deps
 
 print("🤗 Verifying transformers...")
 try:
