@@ -34,7 +34,10 @@ else:
 cells.append(nbf.v4.new_code_cell("""# Clone the repository with API implementation
 !git clone https://github.com/ryoosk/stable-virtual-camera.git
 %cd stable-virtual-camera
-!git checkout devin/1748692706-api-implementation"""))
+!git checkout devin/1748692706-api-implementation
+
+!ls -la
+print("✅ Repository cloned and checked out successfully!")"""))
 
 cells.append(nbf.v4.new_code_cell("""# Comprehensive dependency fix for torch ecosystem compatibility
 
@@ -67,15 +70,24 @@ try:
 except ImportError as e:
     print(f"❌ AutoImageProcessor import failed: {e}")
     
+!pip install huggingface_hub==0.19.4
+
 try:
     from diffusers.models import AutoencoderKL
     print("✅ AutoencoderKL import successful!")
 except ImportError as e:
     print(f"❌ AutoencoderKL import failed: {e}")
 
-print("📦 Installing remaining dependencies...")
+print("📦 Installing seva package and remaining dependencies...")
+%cd /content/stable-virtual-camera
 !pip install -e .
 !pip install fastapi uvicorn python-multipart imageio[ffmpeg]
+
+try:
+    from seva.api import SevaAPI
+    print("✅ SevaAPI import successful!")
+except ImportError as e:
+    print(f"❌ SevaAPI import failed: {e}")
 
 print("✅ All dependencies installed successfully!")"""))
 
