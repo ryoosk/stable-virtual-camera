@@ -49,7 +49,8 @@ class SevaAPI:
         """Load all required model components."""
         print("Loading Stable Virtual Camera models...")
         
-        self.model = SGMWrapper(load_model(device="cpu", verbose=True).eval()).to(self.device)
+        repo_dir = "/home/ubuntu/repos/stable-virtual-camera"
+        self.model = SGMWrapper(load_model(pretrained_model_name_or_path=repo_dir, device="cpu", verbose=True).eval()).to(self.device)
         
         self.autoencoder = AutoEncoder(chunk_size=1).to(self.device)
         self.conditioner = CLIPConditioner().to(self.device)
@@ -164,7 +165,7 @@ class SevaAPI:
         Returns:
             Tuple of (target_c2ws, target_Ks) tensors
         """
-        img_wh = (int(input_K[0, 0, 2].item() * 2), int(input_K[0, 1, 2].item() * 2))
+        img_wh = (int(input_K[0, 0, 0, 2].item() * 2), int(input_K[0, 0, 1, 2].item() * 2))
         start_c2w = input_c2w[0]
         start_w2c = torch.linalg.inv(start_c2w)
         look_at = torch.tensor([0, 0, 10])
@@ -233,7 +234,15 @@ class SevaAPI:
             )
         
         all_c2ws = torch.cat([input_c2ws, target_c2ws], 0)
+        if input_Ks.dim() == 4 and target_Ks.dim() == 3:
+            target_Ks = target_Ks.unsqueeze(1)  # Add batch dimension
+        elif input_Ks.dim() == 3 and target_Ks.dim() == 4:
+            input_Ks = input_Ks.unsqueeze(1)  # Add batch dimension
         all_Ks = torch.cat([input_Ks, target_Ks], 0)
+        
+        if all_Ks.dim() == 4 and all_Ks.shape[1] == 1:
+            all_Ks = all_Ks.squeeze(1)
+            
         all_Ks = all_Ks * all_Ks.new_tensor([W, H, 1])[:, None]
         
         num_inputs = len(input_imgs)
@@ -292,7 +301,7 @@ class SevaAPI:
             denoiser=self.denoiser,
             image_cond=image_cond,
             camera_cond=camera_cond,
-            save_path=None,
+            save_path="/tmp/seva_api_output",
             use_traj_prior=True,
             traj_prior_c2ws=anchor_c2ws,
             traj_prior_Ks=anchor_Ks,
