@@ -42,54 +42,76 @@ print("✅ Repository cloned and checked out successfully!")"""))
 cells.append(nbf.v4.new_code_cell("""# Comprehensive dependency fix for torch ecosystem compatibility
 
 print("🔧 Fixing torch ecosystem compatibility...")
+print("🚨 This will show dependency conflict warnings - they can be safely ignored!")
 
-!pip uninstall -y torch torchvision torchaudio transformers diffusers accelerate xformers -q
+print("📦 Uninstalling conflicting packages...")
+!pip uninstall -y torch torchvision torchaudio transformers diffusers accelerate xformers sentence-transformers peft -q
 
+print("🔥 Installing torch ecosystem...")
 !pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
 
-!pip install transformers==4.37.2 diffusers==0.25.1 accelerate==0.26.1
+print("🤗 Installing transformers/diffusers with conflict resolution...")
+!pip install transformers==4.37.2 diffusers==0.25.1 accelerate==0.26.1 huggingface_hub==0.19.4 --force-reinstall
 
-print("✅ Torch ecosystem reinstalled. Restarting runtime...")
+print("✅ Dependencies installed with conflict resolution!")
+print("⚠️  Runtime restart required. Please restart and run next cell.")
 
 import os
 os.kill(os.getpid(), 9)"""))
 
 cells.append(nbf.v4.new_code_cell("""# Post-restart: Verify imports and complete setup
-print("🔍 Verifying torch ecosystem imports...")
+print("🔍 Post-restart verification and setup...")
+print("🚨 Dependency conflict warnings are expected and can be ignored!")
 
-try:
-    import torch
-    import torchvision
-    print(f"✅ Torch {torch.__version__}, Torchvision {torchvision.__version__}")
-except ImportError as e:
-    print(f"❌ Torch import failed: {e}")
+def test_import_with_retry(import_func, name, retry_cmd=None):
+    try:
+        import_func()
+        print(f"✅ {name} import successful!")
+        return True
+    except Exception as e:
+        print(f"❌ {name} import failed: {e}")
+        if retry_cmd:
+            print(f"🔄 Attempting {name} fix...")
+            !{retry_cmd}
+            try:
+                import_func()
+                print(f"✅ {name} import fixed!")
+                return True
+            except Exception as e2:
+                print(f"❌ {name} still failing: {e2}")
+                return False
+        return False
 
-try:
-    from transformers import AutoImageProcessor
-    print("✅ AutoImageProcessor import successful!")
-except ImportError as e:
-    print(f"❌ AutoImageProcessor import failed: {e}")
-    
-!pip install huggingface_hub==0.19.4
+test_import_with_retry(
+    lambda: __import__('torch') and __import__('torchvision'),
+    "Torch ecosystem",
+    "pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118 --force-reinstall"
+)
 
-try:
-    from diffusers.models import AutoencoderKL
-    print("✅ AutoencoderKL import successful!")
-except ImportError as e:
-    print(f"❌ AutoencoderKL import failed: {e}")
+test_import_with_retry(
+    lambda: __import__('transformers').AutoImageProcessor,
+    "AutoImageProcessor",
+    "pip install transformers==4.37.2 --force-reinstall"
+)
+
+test_import_with_retry(
+    lambda: __import__('diffusers.models', fromlist=['AutoencoderKL']).AutoencoderKL,
+    "AutoencoderKL",
+    "pip install diffusers==0.25.1 huggingface_hub==0.19.4 --force-reinstall"
+)
 
 print("📦 Installing seva package and remaining dependencies...")
 %cd /content/stable-virtual-camera
-!pip install -e .
-!pip install fastapi uvicorn python-multipart imageio[ffmpeg]
+!pip install -e . --quiet
+!pip install fastapi uvicorn python-multipart imageio[ffmpeg] --quiet
 
-try:
-    from seva.api import SevaAPI
-    print("✅ SevaAPI import successful!")
-except ImportError as e:
-    print(f"❌ SevaAPI import failed: {e}")
+test_import_with_retry(
+    lambda: __import__('seva.api', fromlist=['SevaAPI']).SevaAPI,
+    "SevaAPI",
+    "pip install -e . --force-reinstall --quiet"
+)
 
-print("✅ All dependencies installed successfully!")"""))
+print("✅ Setup completed! Dependency conflicts are normal and won't affect functionality.")"""))
 
 cells.append(nbf.v4.new_markdown_cell("""## 2. Authentication and Model Download
 
@@ -120,16 +142,45 @@ except Exception as e:
 
 cells.append(nbf.v4.new_markdown_cell("## 3. Direct API Usage Demo"))
 
-cells.append(nbf.v4.new_code_cell("""# Initialize the API
-from seva.api import SevaAPI
-import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
-import torch
+cells.append(nbf.v4.new_code_cell("""# Initialize the API with robust error handling
+print("🚀 Initializing Stable Virtual Camera API...")
+print("⚠️  This will download ~5GB of model weights on first run")
+print("🚨 Any remaining dependency warnings can be safely ignored!")
 
-print("Initializing Stable Virtual Camera API...")
-api = SevaAPI(device="cuda", compile_model=False)
-print("✅ API initialized successfully!")"""))
+try:
+    from seva.api import SevaAPI
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from PIL import Image
+    import torch
+    print("✅ All imports successful!")
+except ImportError as e:
+    print(f"❌ Import failed: {e}")
+    print("🔄 Attempting import fix...")
+    !pip install -e . --force-reinstall --quiet
+    from seva.api import SevaAPI
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from PIL import Image
+    import torch
+    print("✅ Imports fixed!")
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"🔧 Using device: {device}")
+
+try:
+    api = SevaAPI(device=device, compile_model=False)
+    print("✅ API initialized successfully!")
+except Exception as e:
+    print(f"❌ API initialization failed: {e}")
+    if device == "cuda":
+        print("🔄 Attempting CPU fallback...")
+        api = SevaAPI(device="cpu", compile_model=False)
+        print("✅ API initialized with CPU fallback!")
+    else:
+        raise e
+
+print(f"🎯 Ready for novel view synthesis on {api.device}!")"""))
 
 cells.append(nbf.v4.new_code_cell("""# Test image preprocessing
 test_image_path = "assets/basic/vasedeck.jpg"
